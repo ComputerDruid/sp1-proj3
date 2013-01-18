@@ -1,3 +1,6 @@
 *.o
 /BuildImage
 /usb.image
+*.lst
+*.b
+*.nl
