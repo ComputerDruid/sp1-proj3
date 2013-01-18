@@ -1,0 +1,3 @@
+*.o
+/BuildImage
+/usb.image
