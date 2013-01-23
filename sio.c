@@ -32,6 +32,12 @@ void sio_init( void ) {
 	*/
 	__outb( UA4_LCR, UA4_LCR_BANK0 | UA4_LCR_BITS_8 |
 	    UA4_LCR_1_STOP_BIT | UA4_LCR_NO_PARITY );
+	/*
+	** Set Modem Control Register to send and receive
+	** This is necessary to receive data from the ADDS terminals
+	*/
+	__outb( UA4_MCR, UA4_MCR_DTR | UA4_MCR_RTS |
+	        UA4_MCR_ISEN );
 }
 
 /*
