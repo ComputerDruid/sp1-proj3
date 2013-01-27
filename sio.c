@@ -10,9 +10,39 @@
 #include "sio.h"
 #include "startup.h"
 #include <uart.h>
-
+#include "x86arch.h"
+#include "support.h"
 #define	CTRL_D	0x4		/* control-D character */
 
+static int current_char = 0;
+
+static void io_interrupt_handler(int vector, int code) {
+	int eventID = __inb(UA4_EIR) & UA4_EIR_INT_PRI_MASK;
+	while(eventID != UA4_EIR_NO_INT)
+	{
+		//and the eventID to turn reserved/FIFO bits to 0
+		switch(eventID)
+		{
+			case UA4_EIR_LINE_STATUS:
+			__inb(UA4_LSR);
+			break;
+
+			case UA4_EIR_RX_HIGH:
+			case UA5_EIR_RX_FIFO_TO:
+			current_char = __inb(UA4_RXD) & 0x7f;
+			break;
+
+			case UA4_EIR_TX_LOW:
+			break;
+
+			case UA4_EIR_MODEM_STATUS:
+			__inb(UA4_MSR);
+			break;
+		}
+		eventID = __inb(UA4_EIR) & UA4_EIR_INT_PRI_MASK;
+	}
+	__outb( PIC_MASTER_CMD_PORT, PIC_EOI );
+}
 /*
 ** sio_init
 **
@@ -38,6 +68,10 @@ void sio_init( void ) {
 	*/
 	__outb( UA4_MCR, UA4_MCR_DTR | UA4_MCR_RTS |
 	        UA4_MCR_ISEN );
+
+	__install_isr(INT_VEC_SERIAL_PORT_1, io_interrupt_handler);
+
+	__outb(UA4_IER, UA4_IER_RX_INT_ENABLE);
 }
 
 /*
@@ -76,12 +110,15 @@ int sio_gets( char *buffer, unsigned int bufsize ) {
 	** the terminating null byte.
 	*/
 	while( bufsize > 1 ) {
-		char	ch;
+		char	ch = 0;
 
 		/*
 		** Get a character and see if it was a CTRL-D
 		*/
-		ch = sio_getchar();
+		while(!ch)
+		{
+			ch = sio_getchar();
+		}
 		if( ch == EOF ) {
 			/* Activate without storing anything */
 			break;
@@ -125,15 +162,11 @@ void sio_putchar( char ch ) {
 **
 **	Read a single character from the device
 */
-int sio_getchar( void ) {
-	int	ch;
+int sio_getchar( void ){
+	int ch = current_char;
 
-	/* Wait for the receiver to become ready */
-	while( ( __inb( UA4_LSR ) & UA4_LSR_RXDA ) == 0 )
-		;
 
 	/* Read the character, strip the parity bit, check for control-D */
-	ch = __inb( UA4_RXD ) & 0x7f;
 	if( ch == CTRL_D ){
 		ch = EOF;
 	} else {
@@ -143,6 +176,8 @@ int sio_getchar( void ) {
 		}
 		sio_putchar( ch );
 	}
+	if(ch)
+	current_char = 0;
 
 	return ch;
 }
