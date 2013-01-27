@@ -20,3 +20,7 @@ void timer_init(void) {
 	__outb(TIMER_0_PORT, divisor >> 8);
 	__install_isr(INT_VEC_TIMER, timer_interrupt_handler);
 }
+
+unsigned int uptime(void) {
+	return count * 10;
+}
