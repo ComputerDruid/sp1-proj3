@@ -7,7 +7,7 @@
 ** Description:	Main program of the sample polled serial I/O program.
 */
 
-#include "sio.h"
+#include "os.h"
 #include "io.h"
 
 #define	BUFSIZE	100
@@ -36,10 +36,7 @@ int main ( void ) {
 	int	len;
 	unsigned int device = DEVICE_SERIAL;
 
-	/*
-	** Initialize the serial port
-	*/
-	sio_init();
+	os_init();
 
 	/*
 	** Prompt for input, get a reply, tell them how many characters
