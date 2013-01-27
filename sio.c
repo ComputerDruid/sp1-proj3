@@ -12,6 +12,7 @@
 #include <uart.h>
 #include "x86arch.h"
 #include "support.h"
+#include "sleep.h"
 #define	CTRL_D	0x4		/* control-D character */
 
 static int current_char = 0;
@@ -115,9 +116,9 @@ int sio_gets( char *buffer, unsigned int bufsize ) {
 		/*
 		** Get a character and see if it was a CTRL-D
 		*/
-		while(!ch)
+		while(!(ch = sio_getchar()))
 		{
-			ch = sio_getchar();
+			sleep();
 		}
 		if( ch == EOF ) {
 			/* Activate without storing anything */

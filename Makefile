@@ -11,8 +11,8 @@
 #
 U_C_SRC = main.c sio.c io.c dummy_io.c os.c timer.c
 U_C_OBJ = main.o sio.o io.o dummy_io.o os.o timer.o
-U_S_SRC =
-U_S_OBJ =
+U_S_SRC = sleep.S
+U_S_OBJ = sleep.o
 U_LIBS	=
 
 #
