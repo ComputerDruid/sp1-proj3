@@ -4,7 +4,7 @@
 #include "startup.h"
 
 static unsigned int count = 0;
-void timer_interrupt_handler(int vector, int code) {
+static void timer_interrupt_handler(int vector, int code) {
 	count++;
 	if (count%100 == 0) {
 		dputs(DEVICE_CONSOLE, "Timer Stuff\n");
