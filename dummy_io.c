@@ -9,5 +9,8 @@ int dummy_gets(char *buffer, unsigned int count) {
 		return -1;
 	}
 }
+int dummy_getchar(void) {
+	return 0;
+}
 void dummy_puts(char *str) {
 }

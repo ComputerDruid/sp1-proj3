@@ -4,6 +4,7 @@ struct character_device {
 	char *name;
 	void (*puts)(char*);
 	int (*gets)(char*, unsigned int count);
+	int (*getchar)(void);
 };
 
 extern struct character_device device_list[];
