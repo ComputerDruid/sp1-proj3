@@ -45,6 +45,7 @@ int main ( void ) {
 	** Prompt for input, get a reply, tell them how many characters
 	** there were, and repeat until end of file is reached.
 	*/
+	dputs( device, "" );
 	dputs( device, "\n? " );
 	while( (len = dgets( device, buffer, sizeof( buffer ) )) > 0 ){
 		dputs( device, "You entered: " );
