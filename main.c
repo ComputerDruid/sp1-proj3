@@ -9,7 +9,7 @@
 
 #include "os.h"
 #include "io.h"
-
+#include "timer.h"
 #define	BUFSIZE	100
 
 /*
@@ -50,6 +50,7 @@ int main ( void ) {
 		dputs( device, "which is " );
 		print_integer( device, len );
 		dputs( device, " characters.\n? " );
+		print_integer(device, uptime());
 	}
 	dputs(device, "No More Input.\n");
 
