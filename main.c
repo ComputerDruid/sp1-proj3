@@ -32,8 +32,6 @@ void print_integer( unsigned int device, int value ) {
 **	Main program
 */
 int main ( void ) {
-	char	buffer[ BUFSIZE ];
-	int	len;
 	unsigned int device = DEVICE_SERIAL;
 
 	os_init();
