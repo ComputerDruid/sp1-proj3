@@ -14,10 +14,10 @@ static void timer_interrupt_handler(int vector, int code) {
 
 void timer_init(void) {
 	dputs(DEVICE_CONSOLE, "Initializing Timer\n");
-	unsigned int divisor = TIMER_FREQUENCY/100;
+	unsigned int divisor = TIMER_FREQUENCY/33;
 	__outb(TIMER_CONTROL_PORT, TIMER_0_SELECT | TIMER_USE_DECIMAL | TIMER_MODE_3 | TIMER_0_LOAD);
-	__outb(TIMER_0_PORT, divisor & 0x0f);
-	__outb(TIMER_0_PORT, divisor >> 4);
+	__outb(TIMER_0_PORT, divisor & 0xff);
+	__outb(TIMER_0_PORT, divisor >> 8);
 	__install_isr(INT_VEC_TIMER, timer_interrupt_handler);
 }
 
