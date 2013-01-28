@@ -16,6 +16,33 @@
 #define	CTRL_D	0x4		/* control-D character */
 
 static int current_char = 0;
+#define WRITE_BUF_LEN 100
+char *write_buf = (char*)0;
+int write_buf_start = 0;
+int write_buf_end = 0;
+
+//NOTE: iterrupts must not be enabled when this routine is run
+//This routine must only be called when the device is ready to accept output
+static void write_one_byte(void) {
+	if (write_buf_start >= write_buf_end) return;
+	if (!write_buf) return;
+
+	char ch = write_buf[write_buf_start];
+
+	/* If this character is a newline, send out a return first */
+	/* FIXME: this \r handling code is fragile and doesn't work for all cases */
+	if( ch == '\n' ){
+		ch = '\r';
+		write_buf[write_buf_start] = '\r';
+		write_buf_start--;
+	}
+	else if (ch == '\r') {
+		ch = '\n';
+		write_buf[write_buf_start] = '\n';
+	}
+	__outb( UA4_TXD, ch );
+	++write_buf_start;
+}
 
 static void io_interrupt_handler(int vector, int code) {
 	int eventID = __inb(UA4_EIR) & UA4_EIR_INT_PRI_MASK;
@@ -34,6 +61,7 @@ static void io_interrupt_handler(int vector, int code) {
 			break;
 
 			case UA4_EIR_TX_LOW:
+			write_one_byte();
 			break;
 
 			case UA4_EIR_MODEM_STATUS:
@@ -72,7 +100,20 @@ void sio_init( void ) {
 
 	__install_isr(INT_VEC_SERIAL_PORT_1, io_interrupt_handler);
 
-	__outb(UA4_IER, UA4_IER_RX_INT_ENABLE);
+	__outb(UA4_IER, UA4_IER_RX_INT_ENABLE | UA4_IER_TX_INT_ENABLE);
+}
+
+static void write_start(void) {
+	while (__inb( UA4_LSR ) & UA4_LSR_TXRDY) {
+		if (write_buf_start == write_buf_end) return;
+		__asm("cli");
+		if (__inb( UA4_LSR ) & UA4_LSR_TXRDY) {
+			write_one_byte();
+		}
+		__asm("sti");
+	}
+	//Dropped out of the loop; the device is no longer ready for input
+	//When it becomes ready, it will interrupt to let us know
 }
 
 /*
@@ -81,14 +122,23 @@ void sio_init( void ) {
 **	Write the null-terminated string to the serial port.
 */
 void sio_puts( char *buffer ) {
-	char	ch;
+	write_buf = (char*) 0;
+	write_buf_start = 0;
+	write_buf_end = 0;
+	char *temp = buffer;
 
-	/*
-	** Get characters one by one and write them to the port
-	*/
-	while( (ch = *buffer++) != '\0' ) {
-		sio_putchar( ch );
+	//poor man's strlen
+	while( *buffer++ != '\0' ) {
+		++write_buf_end;
 	}
+
+	write_buf = temp;
+
+	write_start();
+
+	//block until IO finishes
+	//NOTE: This is not a busy wait due to the call to sleep()
+	while (write_buf_start != write_buf_end) sleep();
 }
 
 /*
@@ -146,16 +196,9 @@ int sio_gets( char *buffer, unsigned int bufsize ) {
 **	Write a single character to the device
 */
 void sio_putchar( char ch ) {
-
-	/* If this character is a newline, send out a return first */
-	if( ch == '\n' ){
-		sio_putchar( '\r' );
-	}
-
-	/* Wait for the transmitter to become ready */
-	while( ( __inb( UA4_LSR ) & UA4_LSR_TXRDY ) == 0 )
-		;
-	__outb( UA4_TXD, ch );
+	static char buf[2] = {'\0', '\0'};
+	buf[0] = ch;
+	sio_puts(buf);
 }
 
 /*
