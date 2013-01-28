@@ -16,4 +16,5 @@ extern struct character_device device_list[];
 int dgets(unsigned int device, char *str, unsigned int count);
 void dputs(unsigned int device, char *str);
 void dputchar(unsigned int device, char c);
+int dgetchar(unsigned int device);
 #endif
