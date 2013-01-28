@@ -44,13 +44,28 @@ int main ( void ) {
 	*/
 	dputs( device, "" );
 	dputs( device, "\n? " );
-	while( (len = dgets( device, buffer, sizeof( buffer ) )) > 0 ){
-		dputs( device, "You entered: " );
-		dputs( device, buffer );
-		dputs( device, "which is " );
-		print_integer( device, len );
-		dputs( device, " characters.\n? " );
-		print_integer(device, uptime());
+	int last = uptime();
+	while(1){
+		int ch = dgetchar(device);
+		switch(ch)
+		{
+			case 'a':
+			dputs(device, "Switching to alarm mode\n");
+			break;
+			case 's':
+			dputs(device, "Switching to set mode\n");
+			break;
+			case 't':
+			dputs(device, "Switching to timer mode\n");
+			break;
+		}
+		int cur = uptime();
+		if(cur != last)
+		{
+			print_integer(device, uptime());
+			dputs(device, "\n");
+			last = cur;
+		}
 	}
 	dputs(device, "No More Input.\n");
 
