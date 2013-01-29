@@ -41,7 +41,6 @@ int main ( void ) {
 	** there were, and repeat until end of file is reached.
 	*/
 	dputs( device, "" );
-	dputs( device, "\n? " );
 
 	int last = uptime();
 	char time[9];
