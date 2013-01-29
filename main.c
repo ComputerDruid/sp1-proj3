@@ -36,10 +36,6 @@ int main ( void ) {
 
 	os_init();
 
-	/*
-	** Prompt for input, get a reply, tell them how many characters
-	** there were, and repeat until end of file is reached.
-	*/
 	dputs( device, "" );
 
 	int last = uptime();
