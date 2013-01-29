@@ -9,8 +9,8 @@
 #
 # User supplied files
 #
-U_C_SRC = main.c sio.c io.c dummy_io.c os.c timer.c
-U_C_OBJ = main.o sio.o io.o dummy_io.o os.o timer.o
+U_C_SRC = main.c sio.c io.c dummy_io.c os.c timer.c watch.c
+U_C_OBJ = main.o sio.o io.o dummy_io.o os.o timer.o watch.o
 U_S_SRC = sleep.S
 U_S_OBJ = sleep.o
 U_LIBS	=
