@@ -42,7 +42,11 @@ int main ( void ) {
 	*/
 	dputs( device, "" );
 	dputs( device, "\n? " );
+
 	int last = uptime();
+	char time[9];
+	uptime_to_string(last, time);
+	dputs(device, time);
 	while(1){
 		int ch = dgetchar(device);
 		switch(ch)
@@ -60,8 +64,7 @@ int main ( void ) {
 		int cur = uptime();
 		if(cur != last)
 		{
-			print_integer(device, uptime());
-			dputs(device, "\n");
+			print_time_diff(device, cur, last);
 			last = cur;
 		}
 	}
