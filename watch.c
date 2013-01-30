@@ -48,7 +48,24 @@ static void print_time_ex(device_t d, unsigned int time) {
 }
 
 static void erase_typed_char(device_t d, int ch) {
-	if (ch) dputs(d, " "); //compensate for typed character
+	if (ch) {
+		switch (ch) {
+			case 0x16:
+				dputchar(d, 0xb);
+				break;
+			case 0xb:
+				dputchar(d, 0x16);
+				break;
+			case 0x8:
+				dputchar(d, 0xc);
+				break;
+			case 0xc:
+				dputchar(d, 0x8);
+				break;
+			default:
+				dputs(d, " "); //compensate for typed character
+		}
+	}
 }
 
 void timer(device_t d) {
