@@ -32,6 +32,7 @@ void timer(int device) {
 				timer_mode = 0;
 			break;
 		}
+		if (!timer_mode) break; //skip display update
 		unsigned int cur = accumulated_time +
 		                   (timer_running ? uptime() - start_time : 0);
 		if(cur != last)
