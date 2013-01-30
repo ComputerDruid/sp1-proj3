@@ -25,28 +25,28 @@ static void print_flags_diff(device_t d, int lap) {
 	last_flag_lap = lap;
 }
 
-void print_time_diff_ex(unsigned int device, unsigned int cur, unsigned int last) {
+void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	if (last/1000 != cur/1000) {
-		dputs(device, "");
-		print_time_diff(device, cur, last);
-		dputchar(device, '.');
-		dputchar(device, '0' + (cur/100)%10);
+		dputs(d, "");
+		print_time_diff(d, cur, last);
+		dputchar(d, '.');
+		dputchar(d, '0' + (cur/100)%10);
 	}
 	else if ((last/100)%10 != (cur/100)%10) {
-		dputchar(device, '');
-		dputchar(device, '0' + (cur/100)%10);
+		dputchar(d, '');
+		dputchar(d, '0' + (cur/100)%10);
 	}
 }
 
-void print_time_ex(unsigned int device, unsigned int time) {
+void print_time_ex(device_t d, unsigned int time) {
 	static char tmp[9];
 	uptime_to_string(time, tmp);
-	dputs(device, tmp);
-	dputchar(device, '.');
-	dputchar(device, '0' + (time/100)%10);
+	dputs(d, tmp);
+	dputchar(d, '.');
+	dputchar(d, '0' + (time/100)%10);
 }
 
-void timer(int device) {
+void timer(device_t d) {
 	unsigned int start_time;
 	static unsigned int accumulated_time = 0;
 	unsigned int last = 0;
@@ -54,13 +54,13 @@ void timer(int device) {
 	int timer_running = 0;
 	int lap_mode = 0;
 
-	print_time_ex(device, accumulated_time);
-	print_flags(device, lap_mode);
+	print_time_ex(d, accumulated_time);
+	print_flags(d, lap_mode);
 	last = accumulated_time;
 
 	while(timer_mode){
-		int ch = dgetchar(device);
-		if (ch) dputs(device, " "); //compensate for typed character
+		int ch = dgetchar(d);
+		if (ch) dputs(d, " "); //compensate for typed character
 		switch(ch)
 		{
 			case 's':
@@ -78,7 +78,7 @@ void timer(int device) {
 				lap_mode = !lap_mode;
 			break;
 			case 'r':
-				dputs(device, "\nSwitching back to normal mode\n");
+				dputs(d, "\nSwitching back to normal mode\n");
 				timer_mode = 0;
 			break;
 		}
@@ -87,13 +87,13 @@ void timer(int device) {
 		                   (timer_running ? uptime() - start_time : 0);
 		if((cur/100 != last/100)&& !lap_mode)
 		{
-			dputs(device, ""); //clear flags
-			print_time_diff_ex(device, cur, last);
-			print_flags(device, lap_mode);
+			dputs(d, ""); //clear flags
+			print_time_diff_ex(d, cur, last);
+			print_flags(d, lap_mode);
 			last = cur;
 		}
 		else {
-			print_flags_diff(device, lap_mode);
+			print_flags_diff(d, lap_mode);
 		}
 	}
 	//save accumulated time
