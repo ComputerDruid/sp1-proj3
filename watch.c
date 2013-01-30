@@ -1,5 +1,27 @@
 #include "timer.h"
 #include "io.h"
+
+void print_time_diff_ex(unsigned int device, unsigned int cur, unsigned int last) {
+	if (last/1000 != cur/1000) {
+		dputs(device, "");
+		print_time_diff(device, cur, last);
+		dputchar(device, '.');
+		dputchar(device, '0' + (cur/100)%10);
+	}
+	else if ((last/100)%10 != (cur/100)%10) {
+		dputchar(device, '');
+		dputchar(device, '0' + (cur/100)%10);
+	}
+}
+
+void print_time_ex(unsigned int device, unsigned int time) {
+	static char tmp[9];
+	uptime_to_string(time, tmp);
+	dputs(device, tmp);
+	dputchar(device, '.');
+	dputchar(device, '0' + (time/100)%10);
+}
+
 void timer(int device) {
 	unsigned int start_time;
 	static unsigned int accumulated_time = 0;
@@ -7,9 +29,8 @@ void timer(int device) {
 	int timer_mode = 1;
 	int timer_running = 0;
 
-	char time[9];
-	uptime_to_string(0, time);
-	dputs(device, time);
+	print_time_ex(device, accumulated_time);
+	last = accumulated_time;
 
 	while(timer_mode){
 		int ch = dgetchar(device);
@@ -37,7 +58,7 @@ void timer(int device) {
 		                   (timer_running ? uptime() - start_time : 0);
 		if(cur != last)
 		{
-			print_time_diff(device, cur, last);
+			print_time_diff_ex(device, cur, last);
 			last = cur;
 		}
 	}
