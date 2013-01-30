@@ -9,19 +9,19 @@ struct character_device device_list[NUM_DEVICES] = {
 	{"serial", sio_puts, sio_gets, sio_getchar}
 };
 
-void dputs(unsigned int device, char *str) {
-	return device_list[device].puts(str);
+void dputs(device_t d, char *str) {
+	return device_list[d].puts(str);
 }
 
-int dgets(unsigned int device, char *str, unsigned int count) {
-	return device_list[device].gets(str, count);
+int dgets(device_t d, char *str, unsigned int count) {
+	return device_list[d].gets(str, count);
 }
 
-int dgetchar(unsigned int device) {
-	return device_list[device].getchar();
+int dgetchar(device_t d) {
+	return device_list[d].getchar();
 }
 
-void dputchar(unsigned int device, char c) {
+void dputchar(device_t d, char c) {
 	char string[2] = { c, '\0'};
-	return dputs(device, string);
+	return dputs(d, string);
 }

@@ -13,8 +13,9 @@ extern struct character_device device_list[];
 #define DEVICE_CONSOLE 1
 #define DEVICE_SERIAL 2
 
-int dgets(unsigned int device, char *str, unsigned int count);
-void dputs(unsigned int device, char *str);
-void dputchar(unsigned int device, char c);
-int dgetchar(unsigned int device);
+typedef unsigned int device_t;
+int dgets(device_t d, char *str, unsigned int count);
+void dputs(device_t d, char *str);
+void dputchar(device_t d, char c);
+int dgetchar(device_t d);
 #endif
