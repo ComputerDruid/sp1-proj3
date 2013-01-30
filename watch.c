@@ -1,5 +1,6 @@
 #include "timer.h"
 #include "io.h"
+#include "mystery.h"
 
 //global mode bits:
 static int alarm_set = 0;
@@ -100,31 +101,43 @@ void timer(device_t d) {
 	accumulated_time += timer_running? uptime() - start_time : 0;
 }
 
+static char mystery_code[] = { 0xb, 0xb, 0x16, 0x16, 0x8, 0xc, 0x8, 0xc, 0x62, 0x0 };
 void normal(void) {
 	unsigned int device = DEVICE_SERIAL;
 	dputs( device, "" );
 
+	int mystery_pos = 0;
 	int last = uptime();
 	char time[9];
 	uptime_to_string(last, time);
 	dputs(device, time);
 	while(1){
 		int ch = dgetchar(device);
-		if (ch) dputs(device, " "); //compensate for typed character
-		switch(ch)
-		{
-			case 'a':
-			dputs(device, "Switching to alarm mode\n");
-			break;
-			case 's':
-			dputs(device, "Switching to set mode\n");
-			break;
-			case 't':
-			dputs(device, "\nSwitching to timer mode\n");
-			timer(device);
-			uptime_to_string(last, time);
-			dputs(device, time);
-			break;
+		if (ch) {
+			dputs(device, " "); //compensate for typed character
+			switch(ch)
+			{
+				case 'a':
+				if (mystery_code[mystery_pos])
+					dputs(device, "Switching to alarm mode\n");
+				else mystery(device);
+				break;
+				case 's':
+				dputs(device, "Switching to set mode\n");
+				break;
+				case 't':
+				dputs(device, "\nSwitching to timer mode\n");
+				timer(device);
+				uptime_to_string(last, time);
+				dputs(device, time);
+				break;
+			}
+			if (ch == mystery_code[mystery_pos]) {
+				mystery_pos++;
+			}
+			else {
+				mystery_pos = 0;
+			}
 		}
 		int cur = uptime();
 		if(cur != last)
