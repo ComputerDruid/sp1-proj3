@@ -41,7 +41,7 @@ void timer(int device) {
 		}
 	}
 	//save accumulated time
-	accumulated_time += uptime() - start_time;
+	accumulated_time += timer_running? uptime() - start_time : 0;
 }
 
 void normal(void) {
