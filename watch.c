@@ -25,7 +25,7 @@ static void print_flags_diff(device_t d, int lap) {
 	last_flag_lap = lap;
 }
 
-void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
+static void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	if (last/1000 != cur/1000) {
 		dputs(d, "");
 		print_time_diff(d, cur, last);
@@ -38,7 +38,7 @@ void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	}
 }
 
-void print_time_ex(device_t d, unsigned int time) {
+static void print_time_ex(device_t d, unsigned int time) {
 	static char tmp[9];
 	uptime_to_string(time, tmp);
 	dputs(d, tmp);
