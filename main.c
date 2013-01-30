@@ -8,6 +8,7 @@
 */
 
 #include "os.h"
+#include "watch.h"
 
 /*
 ** main
