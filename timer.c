@@ -26,6 +26,61 @@ unsigned int uptime(void) {
 	return count * 10;
 }
 
+//Takes uncompressed time string and compresses (removes :'s) it
+//Assumes two null terminated strings of size 9 and 7 respectively
+void compress_time_str(char* uncompressed, char* compressed)
+{
+	int compressed_index = 0;
+	for(int i = 0; i < sizeof(uncompressed); i++)
+	{
+		switch(uncompressed[i])
+		{
+		case ':':
+			break;
+		default:
+			compressed[compressed_index] = uncompressed[i];
+			compressed_index++;
+		}
+	}
+}
+
+//Takes a compressed or uncompressed time string and returns the time
+//it represents in miliseconds
+unsigned int string_to_time(char* time_str)
+{
+	char compressed_time_str[7];
+	unsigned int time_in_ms = 0;
+	
+	//if we have uncompressed time, compress it.
+	//else copy it into our local variable
+	if(sizeof(time_str) > 7)
+	compress_time_str(time_str, compressed_time_str);
+	else
+	{
+		for(int i = 0; i < sizeof(compressed_time_str); i++)
+		{
+			compressed_time_str[i] = time_str[i];
+		}
+	}
+
+	time_in_ms += (compressed_time_str[0] - '0')*(MS_PER_HOUR*10);
+	time_in_ms += (compressed_time_str[1] - '0')*(MS_PER_HOUR);
+	time_in_ms += (compressed_time_str[2] - '0')*(MS_PER_MIN*10);
+	time_in_ms += (compressed_time_str[3] - '0')*(MS_PER_MIN);
+	time_in_ms += (compressed_time_str[4] - '0')*(MS_PER_SEC*10);
+	time_in_ms += (compressed_time_str[5] - '0')*(MS_PER_SEC);
+
+	return time_in_ms;
+}
+
+
+//Simple function that takes a new count (in miliseconds) and sets the
+//global count variable which is in hundredths of a second.
+void set_timer_count(unsigned int new_count)
+{
+	count = new_count/10;
+}
+
 /******************************************************************
 Name: print_time_diff
 Purpose: Calculate difference between two times given and print out
