@@ -1,6 +1,30 @@
 #include "timer.h"
 #include "io.h"
 
+//global mode bits:
+static int alarm_set = 0;
+
+
+static int last_flag_alarm = 0;
+static int last_flag_lap = 0;
+static void print_flags(device_t d, int lap) {
+	dputchar(d, alarm_set ? '*' : ' ');
+	dputchar(d, lap ? 'L' : ' ');
+	last_flag_alarm = alarm_set;
+	last_flag_lap = lap;
+}
+static void print_flags_diff(device_t d, int lap) {
+	if (last_flag_alarm != alarm_set) {
+		dputs(d, "");
+		print_flags(d, lap);
+	}
+	else if (last_flag_lap != lap) {
+		dputs(d, lap ? "L" : " ");
+	}
+	last_flag_alarm = alarm_set;
+	last_flag_lap = lap;
+}
+
 void print_time_diff_ex(unsigned int device, unsigned int cur, unsigned int last) {
 	if (last/1000 != cur/1000) {
 		dputs(device, "");
@@ -28,8 +52,10 @@ void timer(int device) {
 	unsigned int last = 0;
 	int timer_mode = 1;
 	int timer_running = 0;
+	int lap_mode = 0;
 
 	print_time_ex(device, accumulated_time);
+	print_flags(device, lap_mode);
 	last = accumulated_time;
 
 	while(timer_mode){
@@ -48,6 +74,9 @@ void timer(int device) {
 				start_time = uptime();
 				accumulated_time = 0;
 			break;
+			case 'l':
+				lap_mode = !lap_mode;
+			break;
 			case 'r':
 				dputs(device, "\nSwitching back to normal mode\n");
 				timer_mode = 0;
@@ -56,10 +85,15 @@ void timer(int device) {
 		if (!timer_mode) break; //skip display update
 		unsigned int cur = accumulated_time +
 		                   (timer_running ? uptime() - start_time : 0);
-		if(cur != last)
+		if((cur/100 != last/100)&& !lap_mode)
 		{
+			dputs(device, ""); //clear flags
 			print_time_diff_ex(device, cur, last);
+			print_flags(device, lap_mode);
 			last = cur;
+		}
+		else {
+			print_flags_diff(device, lap_mode);
 		}
 	}
 	//save accumulated time
