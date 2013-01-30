@@ -5,7 +5,6 @@
 //global mode bits:
 static int alarm_set = 0;
 
-
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
 static void print_flags(device_t d, int lap) {
@@ -122,6 +121,75 @@ void timer(device_t d) {
 	accumulated_time += timer_running? uptime() - start_time : 0;
 }
 
+int set(device_t d, unsigned int cur_time)
+{
+	char cur_time_str[9];
+	char cur_time_str_compressed[7];
+
+	//Get cur_time as a string, compress it for use later
+	uptime_to_string(cur_time, cur_time_str);
+	compress_time_str(cur_time_str, cur_time_str_compressed);
+
+	//Clear the screen, print cur_time_str
+	dputchar(d, ''); 
+	dputs(d, cur_time_str);
+	int setting_time = 1;
+
+	//Move the cursor back nine spaces to allow user to set the time
+	for(int i = 0; i < 8; i++)
+	{
+		dputchar(d, '');
+	}
+	int ch = 0;
+	
+	char digits[7];
+	for(int i = 0; i < sizeof(digits); i++)
+	{
+		digits[i] = ' ';
+	}
+	digits[6] = '\0';
+	int digit_index = 0;
+
+	//Set the digits of the clock
+	while(setting_time)
+	{
+		ch = dgetchar(d);
+		if((ch >= '0' && ch <= '9') || ch == ' ')
+		{
+			digits[digit_index] = ch;
+			digit_index++;
+			if(digit_index == 2 || digit_index == 4)
+			dputchar(d, ':');
+			else if(digit_index == 6)
+			{
+				setting_time = 0; //All done
+			}
+		}
+		else
+		{
+			switch(ch)
+			{
+			case 'r':
+				setting_time = 0; //All done
+			default:
+				erase_typed_char(d, ch);
+			}
+		}
+	}
+
+	//Get rid of spaces in digits[] and put in digits from cur_time_compressed_str[]
+	for(int i = 0; i < sizeof(digits); i++)
+	{
+		if(digits[i] == ' ')
+		{
+			digits[i] = cur_time_str_compressed[i];
+		}
+	}
+	
+	return string_to_time(digits);
+}
+
+
 static char mystery_code[] = { 0xb, 0xb, 0x16, 0x16, 0x8, 0xc, 0x8, 0xc, 0x62, 0x0 };
 void normal(void) {
 	unsigned int device = DEVICE_SERIAL;
@@ -132,6 +200,7 @@ void normal(void) {
 	char time[9];
 	uptime_to_string(last, time);
 	dputs(device, time);
+	int cur = 0;
 	while(1){
 		int ch = dgetchar(device);
 		if (ch) {
@@ -145,6 +214,11 @@ void normal(void) {
 				break;
 				case 's':
 				dputs(device, "Switching to set mode\n");
+				last = set(device, cur);
+				set_timer_count(last);
+				uptime_to_string(last, time);
+				dputchar(device, '');
+				dputs(device, time);
 				break;
 				case 't':
 				dputs(device, "\nSwitching to timer mode\n");
@@ -160,7 +234,7 @@ void normal(void) {
 				mystery_pos = 0;
 			}
 		}
-		int cur = uptime();
+		cur = uptime();
 		if(cur != last)
 		{
 			print_time_diff(device, cur, last);
