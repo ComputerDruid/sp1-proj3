@@ -47,6 +47,10 @@ static void print_time_ex(device_t d, unsigned int time) {
 	dputchar(d, '0' + (time/100)%10);
 }
 
+static void erase_typed_char(device_t d, int ch) {
+	if (ch) dputs(d, " "); //compensate for typed character
+}
+
 void timer(device_t d) {
 	unsigned int start_time;
 	static unsigned int accumulated_time = 0;
@@ -61,7 +65,7 @@ void timer(device_t d) {
 
 	while(timer_mode){
 		int ch = dgetchar(d);
-		if (ch) dputs(d, " "); //compensate for typed character
+		erase_typed_char(d, ch);
 		switch(ch)
 		{
 			case 's':
@@ -114,7 +118,7 @@ void normal(void) {
 	while(1){
 		int ch = dgetchar(device);
 		if (ch) {
-			dputs(device, " "); //compensate for typed character
+			erase_typed_char(device, ch);
 			switch(ch)
 			{
 				case 'a':
