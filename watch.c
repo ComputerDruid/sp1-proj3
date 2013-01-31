@@ -2,13 +2,18 @@
 #include "io.h"
 #include "mystery.h"
 
+#define MS_PER_HOUR (1000*60*60)
+#define MS_PER_MIN  (1000*60)
+#define MS_PER_SEC  1000
 //global mode bits:
 static int alarm_set = 0;
-
+static int alarm_time = 0;
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
 static void print_flags(device_t d, int lap) {
+	dputchar(d, ' ');
 	dputchar(d, alarm_set ? '*' : ' ');
+	dputchar(d, ' ');
 	dputchar(d, lap ? 'L' : ' ');
 	last_flag_alarm = alarm_set;
 	last_flag_lap = lap;
@@ -121,6 +126,94 @@ void timer(device_t d) {
 	accumulated_time += timer_running? uptime() - start_time : 0;
 }
 
+void alarm(device_t d)
+{
+	//Alarm_set bit is immediately set
+	alarm_set = 1;
+
+	//Needed Variables
+	char alarm_time_str[9];
+	char alarm_time_str_compressed[7];
+	for(int k = 0; k < sizeof(alarm_time_str_compressed); k++)
+	{
+		alarm_time_str_compressed[k] = '0';
+	}
+	alarm_time_str_compressed[6] = '\0';
+
+	//Get alarm_time as a string, compress it for use later
+	uptime_to_string(alarm_time, alarm_time_str);
+	compress_time_str(alarm_time_str, alarm_time_str_compressed);
+
+	//Clear the screen, print alarm_time_str
+	dputchar(d, '');
+	dputs(d, alarm_time_str);
+	int setting_time = 1;
+
+	//Move the cursor back eight spaces to allow user to set the time
+	for(int i = 0; i < 8; i++)
+	{
+		dputchar(d, '');
+	}
+	char ch = 0;
+
+	char digits[7];
+	for(int i = 0; i < sizeof(digits); i++)
+	{
+		digits[i] = ' ';
+	}
+	digits[6] = '\0';
+
+	int digit_index = 0;
+
+	//Set the digits of the clock
+	while(setting_time)
+	{
+		ch = dgetchar(d);
+		if((ch >= '0' && ch <= '9') || ch == ' ')
+		{
+			if(ch == ' ')
+			{
+				dputchar(d, '');
+				dputchar(d, alarm_time_str_compressed[digit_index]);
+				digit_index++;
+			}
+			else
+			{
+				digits[digit_index] = ch;
+				digit_index++;
+			}
+			if(digit_index == 2 || digit_index == 4)
+			dputchar(d, ':');
+			else if(digit_index == 6)
+			{
+				setting_time = 0; //All done
+			}
+		}
+		else
+		{
+			switch(ch)
+			{
+			case 'r':
+				setting_time = 0; //All done
+			default:
+				erase_typed_char(d, ch);
+			}
+		}
+	}
+
+	//Get rid of spaces in digits[] and put in digits from alarm_time_compressed_str[]
+	for(int i = 0; i < sizeof(digits); i++)
+	{
+		if(digits[i] == ' ')
+		{
+			digits[i] = alarm_time_str_compressed[i];
+		}
+	}
+
+	//Set the alarm time after conversion
+	alarm_time = string_to_time(digits);
+}
+
 int set(device_t d, unsigned int cur_time)
 {
 	char cur_time_str[9];
@@ -135,7 +228,7 @@ int set(device_t d, unsigned int cur_time)
 	compress_time_str(cur_time_str, cur_time_str_compressed);
 
 	//Clear the screen, print cur_time_str
-	dputchar(d, ''); 
+	dputchar(d, '');
 	dputs(d, cur_time_str);
 	int setting_time = 1;
 
@@ -145,7 +238,7 @@ int set(device_t d, unsigned int cur_time)
 		dputchar(d, '');
 	}
 	char ch = 0;
-	
+
 	char digits[7];
 	for(int i = 0; i < sizeof(digits); i++)
 	{
@@ -220,6 +313,7 @@ void normal(void) {
 	char time[9];
 	uptime_to_string(last, time);
 	dputs(device, time);
+	print_flags(device, 0);
 	int cur = 0;
 	while(1){
 		int ch = dgetchar(device);
@@ -229,7 +323,13 @@ void normal(void) {
 			{
 				case 'a':
 				if (mystery_code[mystery_pos])
-					dputs(device, "Switching to alarm mode\n");
+				{
+					alarm(device);
+					dputchar(device,'');
+					uptime_to_string(last, time);
+					dputs(device, time);
+					print_flags(device, 0);
+				}
 				else mystery(device);
 				break;
 				case 's':
@@ -260,5 +360,115 @@ void normal(void) {
 			print_time_diff(device, cur, last);
 			last = cur;
 		}
+	}
+}
+
+
+/******************************************************************
+Name: print_time_diff
+Purpose: Calculate difference between two times given and print out
+	the required digits. Also takes care of backspacing flags
+	before printing
+Params:	unsigned int current (time in ms)
+	unsigned int last    (time in ms)
+******************************************************************/
+void print_time_diff(unsigned int device, unsigned int current, unsigned int last)
+{
+	//This is the digit scheme used in variable names below:
+	//	h2h1:m2m1:s2s1
+
+	int diff = 0;
+
+	//Calculate current digits because they are always possibly needed
+	unsigned int current_minutes = (current/MS_PER_MIN)%60;
+	int current_minutes_m1 = current_minutes%10;
+	int current_minutes_m2 = current_minutes/10;
+
+	unsigned int current_seconds = (current/MS_PER_SEC)%60;
+	int current_seconds_s1 = current_seconds%10;
+	int current_seconds_s2 = current_seconds/10;
+
+	unsigned int current_hours =   (current/MS_PER_HOUR)%24;
+	int current_hours_h1 = current_hours%10;
+	int current_hours_h2 = current_hours/10;
+
+	//Calculate Hours Digits
+
+	unsigned int last_hours =   (last/MS_PER_HOUR)%24;
+	int last_hours_h1 = last_hours%10;
+	int last_hours_h2 = last_hours/10;
+
+	//short circuit if different
+	if(current_hours_h2 - last_hours_h2)
+		diff = 8;
+	else if(current_hours_h1 - last_hours_h1)
+		diff = 7;
+
+	if(!diff)
+	{
+		//Calculate Minutes digits
+
+		unsigned int last_minutes = (last/MS_PER_MIN)%60;
+		int last_minutes_m1 = last_minutes%10;
+		int last_minutes_m2 = last_minutes/10;
+
+
+
+		//short circuit if different
+		if(current_minutes_m2 - last_minutes_m2)
+			diff = 5;
+		else if(current_minutes_m1 - last_minutes_m1)
+			diff = 4;
+	}
+
+	if(!diff)
+	{
+		//Calculate Seconds digits
+		unsigned int last_seconds = (last/MS_PER_SEC)%60;
+		int last_seconds_s1 = last_seconds%10;
+		int last_seconds_s2 = last_seconds/10;
+
+
+		//short circuit if different
+		if(current_seconds_s2 - last_seconds_s2)
+			diff = 2;
+		else if(current_seconds_s1 - last_seconds_s1)
+			diff = 1;
+	}
+
+	//Backspace flags if a difference is found
+	if(diff)
+	{
+		dputs(device, "");
+	}
+
+	//Diff now has the proper value
+	for(int i = 0; i < diff; i++)
+	{
+		dputchar(device, '');
+	}
+	switch(diff)
+	{
+		case 8:
+		dputchar(device, (char)(current_hours_h2 + '0'));
+		case 7:
+		dputchar(device, (char)(current_hours_h1 + '0'));
+		case 6:
+		dputchar(device, ':');
+		case 5:
+		dputchar(device, (char)(current_minutes_m2 + '0'));
+		case 4:
+		dputchar(device, (char)(current_minutes_m1 + '0'));
+		case 3:
+		dputchar(device, ':');
+		case 2:
+		dputchar(device, (char)(current_seconds_s2 + '0'));
+		case 1:
+		dputchar(device, (char)(current_seconds_s1 + '0'));
+	}
+	//Reprint flags after time has printed
+	if(diff)
+	{
+		print_flags(device, 0);
 	}
 }
