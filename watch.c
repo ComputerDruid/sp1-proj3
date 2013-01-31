@@ -239,8 +239,6 @@ int set(device_t d, unsigned int cur_time)
 	uptime_to_string(cur_time, cur_time_str);
 	compress_time_str(cur_time_str, cur_time_str_compressed);
 
-	//Clear the screen, print cur_time_str
-	dputchar(d, '');
 	dputs(d, cur_time_str);
 	int setting_time = 1;
 
@@ -311,6 +309,7 @@ int set(device_t d, unsigned int cur_time)
 	dputs(DEVICE_CONSOLE, cur_time_str);
 	dputs(DEVICE_CONSOLE, "\n");
 	DEBUG CAN BE STRIPPED*/
+	dputs(d, "\nSwitching back to normal mode\n");
 	return string_to_time(digits);
 }
 
@@ -345,11 +344,10 @@ void normal(void) {
 				else mystery(device);
 				break;
 				case 's':
-				dputs(device, "Switching to set mode\n");
+				dputs(device, "\nSwitching to set mode\n");
 				last = set(device, cur);
 				set_timer_count(last);
 				uptime_to_string(last, time);
-				dputchar(device, '');
 				dputs(device, time);
 				break;
 				case 't':
