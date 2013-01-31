@@ -13,9 +13,7 @@ static int alarm_time = 0;
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
 static void print_flags(device_t d, int lap) {
-	dputchar(d, ' ');
 	dputchar(d, alarm_set ? '*' : ' ');
-	dputchar(d, ' ');
 	dputchar(d, lap ? 'L' : ' ');
 	last_flag_alarm = alarm_set;
 	last_flag_lap = lap;
@@ -450,7 +448,7 @@ void print_time_diff(unsigned int device, unsigned int current, unsigned int las
 	//Backspace flags if a difference is found
 	if(diff)
 	{
-		dputs(device, "");
+		dputs(device, "");
 	}
 
 	//Diff now has the proper value
