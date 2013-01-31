@@ -154,8 +154,7 @@ void alarm(device_t d)
 	uptime_to_string(alarm_time, alarm_time_str);
 	compress_time_str(alarm_time_str, alarm_time_str_compressed);
 
-	//Clear the screen, print alarm_time_str
-	dputchar(d, '');
+	//print alarm_time_str
 	dputs(d, alarm_time_str);
 	int setting_time = 1;
 
@@ -220,6 +219,7 @@ void alarm(device_t d)
 		}
 	}
 
+	dputs(d, "\nSwitching back to normal mode\n");
 	//Set the alarm time after conversion
 	alarm_time = string_to_time(digits);
 }
@@ -333,8 +333,8 @@ void normal(void) {
 				case 'a':
 				if (mystery_code[mystery_pos])
 				{
+					dputs(device, "\nSwitching to alarm mode\n");
 					alarm(device);
-					dputchar(device,'');
 					uptime_to_string(last, time);
 					dputs(device, time);
 					print_flags(device, 0);
