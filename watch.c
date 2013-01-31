@@ -125,7 +125,11 @@ int set(device_t d, unsigned int cur_time)
 {
 	char cur_time_str[9];
 	char cur_time_str_compressed[7];
-
+	for(int k = 0; k < sizeof(cur_time_str_compressed); k++)
+	{
+		cur_time_str_compressed[k] = '0';
+	}
+	cur_time_str_compressed[6] = '\0';
 	//Get cur_time as a string, compress it for use later
 	uptime_to_string(cur_time, cur_time_str);
 	compress_time_str(cur_time_str, cur_time_str_compressed);
@@ -135,12 +139,12 @@ int set(device_t d, unsigned int cur_time)
 	dputs(d, cur_time_str);
 	int setting_time = 1;
 
-	//Move the cursor back nine spaces to allow user to set the time
+	//Move the cursor back eight spaces to allow user to set the time
 	for(int i = 0; i < 8; i++)
 	{
 		dputchar(d, '');
 	}
-	int ch = 0;
+	char ch = 0;
 	
 	char digits[7];
 	for(int i = 0; i < sizeof(digits); i++)
@@ -156,8 +160,17 @@ int set(device_t d, unsigned int cur_time)
 		ch = dgetchar(d);
 		if((ch >= '0' && ch <= '9') || ch == ' ')
 		{
-			digits[digit_index] = ch;
-			digit_index++;
+			if(ch == ' ')
+			{
+				dputchar(d, '');
+				dputchar(d, cur_time_str_compressed[digit_index]);
+				digit_index++;
+			}
+			else
+			{
+				digits[digit_index] = ch;
+				digit_index++;
+			}
 			if(digit_index == 2 || digit_index == 4)
 			dputchar(d, ':');
 			else if(digit_index == 6)
@@ -185,7 +198,14 @@ int set(device_t d, unsigned int cur_time)
 			digits[i] = cur_time_str_compressed[i];
 		}
 	}
-	
+	/*
+	dputs(DEVICE_CONSOLE, digits);
+	dputs(DEVICE_CONSOLE, "\n");
+	dputs(DEVICE_CONSOLE, cur_time_str_compressed);
+	dputs(DEVICE_CONSOLE, "\n");
+	dputs(DEVICE_CONSOLE, cur_time_str);
+	dputs(DEVICE_CONSOLE, "\n");
+	DEBUG CAN BE STRIPPED*/
 	return string_to_time(digits);
 }
 
