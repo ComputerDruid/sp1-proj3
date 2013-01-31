@@ -295,7 +295,7 @@ void normal(void) {
 	dputs( device, "" );
 
 	int mystery_pos = 0;
-	int last = uptime();
+	int last = get_time();
 	char time[9];
 	uptime_to_string(last, time);
 	dputs(device, time);
@@ -321,7 +321,7 @@ void normal(void) {
 				case 's':
 				dputs(device, "\nSwitching to set mode\n");
 				last = set(device, cur);
-				set_timer_count(last);
+				set_time(last);
 				uptime_to_string(last, time);
 				dputs(device, time);
 				print_flags(device, 0);
@@ -341,7 +341,7 @@ void normal(void) {
 				mystery_pos = 0;
 			}
 		}
-		cur = uptime();
+		cur = get_time();
 		if(cur/1000 != last/1000)
 		{
 			dputs(device, "");

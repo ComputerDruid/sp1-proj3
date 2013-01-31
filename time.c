@@ -1,11 +1,15 @@
+#include "time.h"
 #include "timer.h"
 #include "io.h"
 
 #define MS_PER_HOUR (1000*60*60)
 #define MS_PER_MIN  (1000*60)
 #define MS_PER_SEC  1000
+#define MS_PER_DAY (24*MS_PER_HOUR)
 #define UNCOMPRESSED_TIME_STR_SIZE 9 //Uncompressed time strings should always be nine chars
 #define COMPRESSED_TIME_STR_SIZE 7   //Compressed time strings should always be seven chars
+
+static unsigned int time_offset = 0;
 
 /******************************************************************
 Name: print_time_diff
@@ -204,9 +208,12 @@ unsigned int string_to_time(char* time_str)
 	return time_in_ms;
 }
 
-//Simple function that takes a new count (in miliseconds) and sets the
-//global count variable which is in hundredths of a second.
-void set_timer_count(unsigned int new_count)
-{
-	//count = new_count/10;
+//Simple function that takes a new time (in miliseconds) and sets the
+//global time offset.
+void set_time(unsigned int new_time) {
+	time_offset = ((new_time%MS_PER_DAY) - (uptime()%MS_PER_DAY) + MS_PER_DAY)%MS_PER_DAY;
+}
+
+time_t get_time(void) {
+	return (time_offset + uptime()) % MS_PER_DAY;
 }
