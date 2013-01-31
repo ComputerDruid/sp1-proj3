@@ -363,9 +363,11 @@ void normal(void) {
 			}
 		}
 		cur = uptime();
-		if(cur != last)
+		if(cur/1000 != last/1000)
 		{
+			dputs(device, "");
 			print_time_diff(device, cur, last);
+			print_flags(device, 0);
 			check_alarm(device, cur);
 			last = cur;
 		}
@@ -445,12 +447,6 @@ void print_time_diff(unsigned int device, unsigned int current, unsigned int las
 			diff = 1;
 	}
 
-	//Backspace flags if a difference is found
-	if(diff)
-	{
-		dputs(device, "");
-	}
-
 	//Diff now has the proper value
 	for(int i = 0; i < diff; i++)
 	{
@@ -474,10 +470,5 @@ void print_time_diff(unsigned int device, unsigned int current, unsigned int las
 		dputchar(device, (char)(current_seconds_s2 + '0'));
 		case 1:
 		dputchar(device, (char)(current_seconds_s1 + '0'));
-	}
-	//Reprint flags after time has printed
-	if(diff)
-	{
-		print_flags(device, 0);
 	}
 }
