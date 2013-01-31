@@ -347,12 +347,14 @@ void normal(void) {
 				set_timer_count(last);
 				uptime_to_string(last, time);
 				dputs(device, time);
+				print_flags(device, 0);
 				break;
 				case 't':
 				dputs(device, "\nSwitching to timer mode\n");
 				timer(device);
 				uptime_to_string(last, time);
 				dputs(device, time);
+				print_flags(device, 0);
 				break;
 			}
 			if (ch == mystery_code[mystery_pos]) {
