@@ -7,6 +7,8 @@
 #define MS_PER_SEC  1000
 //global mode bits:
 static int alarm_set = 0;
+static int alarm_rang = 0;
+
 static int alarm_time = 0;
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
@@ -18,6 +20,16 @@ static void print_flags(device_t d, int lap) {
 	last_flag_alarm = alarm_set;
 	last_flag_lap = lap;
 }
+
+static void check_alarm(device_t d, unsigned int cur_time)
+{
+	if(alarm_set && !alarm_rang && (cur_time > alarm_time))
+	{
+		dputchar(d, 0x07);
+		alarm_rang = 1;
+	}
+}
+
 static void print_flags_diff(device_t d, int lap) {
 	if (last_flag_alarm != alarm_set) {
 		dputs(d, "");
@@ -358,6 +370,7 @@ void normal(void) {
 		if(cur != last)
 		{
 			print_time_diff(device, cur, last);
+			check_alarm(device, cur);
 			last = cur;
 		}
 	}
