@@ -6,7 +6,8 @@
 #define MS_PER_HOUR (1000*60*60)
 #define MS_PER_MIN  (1000*60)
 #define MS_PER_SEC  1000
-
+#define UNCOMPRESSED_TIME_STR_SIZE 9 //Uncompressed time strings should always be nine chars
+#define COMPRESSED_TIME_STR_SIZE 7   //Compressed time strings should always be seven chars
 static unsigned int count = 0;
 static void timer_interrupt_handler(int vector, int code) {
 	count++;
@@ -31,7 +32,7 @@ unsigned int uptime(void) {
 void compress_time_str(char* uncompressed, char* compressed)
 {
 	int compressed_index = 0;
-	for(int i = 0; i < sizeof(uncompressed); i++)
+	for(int i = 0; i < UNCOMPRESSED_TIME_STR_SIZE; i++)
 	{
 		switch(uncompressed[i])
 		{
@@ -40,6 +41,7 @@ void compress_time_str(char* uncompressed, char* compressed)
 		default:
 			compressed[compressed_index] = uncompressed[i];
 			compressed_index++;
+			break;
 		}
 	}
 }
@@ -54,7 +56,9 @@ unsigned int string_to_time(char* time_str)
 	//if we have uncompressed time, compress it.
 	//else copy it into our local variable
 	if(sizeof(time_str) > 7)
-	compress_time_str(time_str, compressed_time_str);
+	{
+		compress_time_str(time_str, compressed_time_str);
+	}
 	else
 	{
 		for(int i = 0; i < sizeof(compressed_time_str); i++)
