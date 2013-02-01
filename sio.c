@@ -24,6 +24,7 @@ int write_buf_end = 0;
 //NOTE: iterrupts must not be enabled when this routine is run
 //This routine must only be called when the device is ready to accept output
 static void write_one_byte(void) {
+	static int extra_cr_done = 0;
 	//ensure write_buf_end is consistent.
 	write_buf_end %= WRITE_BUF_LEN;
 
@@ -32,15 +33,15 @@ static void write_one_byte(void) {
 	char ch = write_buf[write_buf_start];
 
 	/* If this character is a newline, send out a return first */
-	/* FIXME: this \r handling code is fragile and doesn't work for all cases */
-	if( ch == '\n' ){
-		ch = '\r';
-		write_buf[write_buf_start] = '\r';
-		write_buf_start--;
-	}
-	else if (ch == '\r') {
-		ch = '\n';
-		write_buf[write_buf_start] = '\n';
+	if( ch == '\n') {
+		if (extra_cr_done) {
+			extra_cr_done = 0;
+		}
+		else {
+			ch = '\r';
+			extra_cr_done = 1;
+			write_buf_start--;
+		}
 	}
 	__outb( UA4_TXD, ch );
 	write_buf_start = (write_buf_start + 1)%WRITE_BUF_LEN;
