@@ -150,16 +150,12 @@ void alarm(device_t d)
 
 	//Needed Variables
 	char alarm_time_str[9];
-	char alarm_time_str_compressed[7];
-	for(int k = 0; k < sizeof(alarm_time_str_compressed); k++)
-	{
-		alarm_time_str_compressed[k] = '0';
-	}
-	alarm_time_str_compressed[6] = '\0';
+	char digits[7];
+	digits[6] = '\0';
 
 	//Get alarm_time as a string, compress it for use later
 	uptime_to_string(alarm_time, alarm_time_str);
-	compress_time_str(alarm_time_str, alarm_time_str_compressed);
+	compress_time_str(alarm_time_str, digits);
 
 	//print alarm_time_str
 	dputs(d, alarm_time_str);
@@ -172,13 +168,6 @@ void alarm(device_t d)
 	}
 	char ch = 0;
 
-	char digits[7];
-	for(int i = 0; i < sizeof(digits); i++)
-	{
-		digits[i] = ' ';
-	}
-	digits[6] = '\0';
-
 	int digit_index = 0;
 
 	//Set the digits of the clock
@@ -187,17 +176,12 @@ void alarm(device_t d)
 		ch = dgetchar(d);
 		if((ch >= '0' && ch <= '9') || ch == ' ')
 		{
-			if(ch == ' ')
-			{
-				dputchar(d, alarm_time_str_compressed[digit_index]);
-				digit_index++;
-			}
+			if (ch == ' ')
+				ch = digits[digit_index];
 			else
-			{
 				digits[digit_index] = ch;
-				dputchar(d, ch);
-				digit_index++;
-			}
+			dputchar(d, ch);
+			digit_index++;
 			if(digit_index == 2 || digit_index == 4)
 			dputchar(d, ':');
 			else if(digit_index == 6)
@@ -212,15 +196,6 @@ void alarm(device_t d)
 			case 'r':
 				setting_time = 0; //All done
 			}
-		}
-	}
-
-	//Get rid of spaces in digits[] and put in digits from alarm_time_compressed_str[]
-	for(int i = 0; i < sizeof(digits); i++)
-	{
-		if(digits[i] == ' ')
-		{
-			digits[i] = alarm_time_str_compressed[i];
 		}
 	}
 
@@ -232,15 +207,11 @@ void alarm(device_t d)
 int set(device_t d, unsigned int cur_time)
 {
 	char cur_time_str[9];
-	char cur_time_str_compressed[7];
-	for(int k = 0; k < sizeof(cur_time_str_compressed); k++)
-	{
-		cur_time_str_compressed[k] = '0';
-	}
-	cur_time_str_compressed[6] = '\0';
+	char digits[7];
+	digits[6] = '\0';
 	//Get cur_time as a string, compress it for use later
 	uptime_to_string(cur_time, cur_time_str);
-	compress_time_str(cur_time_str, cur_time_str_compressed);
+	compress_time_str(cur_time_str, digits);
 
 	dputs(d, cur_time_str);
 	int setting_time = 1;
@@ -252,12 +223,6 @@ int set(device_t d, unsigned int cur_time)
 	}
 	char ch = 0;
 
-	char digits[7];
-	for(int i = 0; i < sizeof(digits); i++)
-	{
-		digits[i] = ' ';
-	}
-	digits[6] = '\0';
 	int digit_index = 0;
 
 	//Set the digits of the clock
@@ -267,16 +232,11 @@ int set(device_t d, unsigned int cur_time)
 		if((ch >= '0' && ch <= '9') || ch == ' ')
 		{
 			if(ch == ' ')
-			{
-				dputchar(d, cur_time_str_compressed[digit_index]);
-				digit_index++;
-			}
+				ch = digits[digit_index];
 			else
-			{
 				digits[digit_index] = ch;
-				dputchar(d, ch);
-				digit_index++;
-			}
+			dputchar(d, ch);
+			digit_index++;
 			if(digit_index == 2 || digit_index == 4)
 			dputchar(d, ':');
 			else if(digit_index == 6)
@@ -293,23 +253,6 @@ int set(device_t d, unsigned int cur_time)
 			}
 		}
 	}
-
-	//Get rid of spaces in digits[] and put in digits from cur_time_compressed_str[]
-	for(int i = 0; i < sizeof(digits); i++)
-	{
-		if(digits[i] == ' ')
-		{
-			digits[i] = cur_time_str_compressed[i];
-		}
-	}
-	/*
-	dputs(DEVICE_CONSOLE, digits);
-	dputs(DEVICE_CONSOLE, "\n");
-	dputs(DEVICE_CONSOLE, cur_time_str_compressed);
-	dputs(DEVICE_CONSOLE, "\n");
-	dputs(DEVICE_CONSOLE, cur_time_str);
-	dputs(DEVICE_CONSOLE, "\n");
-	DEBUG CAN BE STRIPPED*/
 	dputs(d, "\nSwitching back to normal mode\n");
 	return string_to_time(digits);
 }
