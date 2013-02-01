@@ -107,7 +107,6 @@ void timer(device_t d) {
 
 	while(timer_mode){
 		int ch = dgetchar(d);
-		erase_typed_char(d, ch);
 		switch(ch)
 		{
 			case 's':
@@ -190,13 +189,13 @@ void alarm(device_t d)
 		{
 			if(ch == ' ')
 			{
-				dputchar(d, '');
 				dputchar(d, alarm_time_str_compressed[digit_index]);
 				digit_index++;
 			}
 			else
 			{
 				digits[digit_index] = ch;
+				dputchar(d, ch);
 				digit_index++;
 			}
 			if(digit_index == 2 || digit_index == 4)
@@ -212,8 +211,6 @@ void alarm(device_t d)
 			{
 			case 'r':
 				setting_time = 0; //All done
-			default:
-				erase_typed_char(d, ch);
 			}
 		}
 	}
@@ -271,13 +268,13 @@ int set(device_t d, unsigned int cur_time)
 		{
 			if(ch == ' ')
 			{
-				dputchar(d, '');
 				dputchar(d, cur_time_str_compressed[digit_index]);
 				digit_index++;
 			}
 			else
 			{
 				digits[digit_index] = ch;
+				dputchar(d, ch);
 				digit_index++;
 			}
 			if(digit_index == 2 || digit_index == 4)
@@ -293,8 +290,6 @@ int set(device_t d, unsigned int cur_time)
 			{
 			case 'r':
 				setting_time = 0; //All done
-			default:
-				erase_typed_char(d, ch);
 			}
 		}
 	}
@@ -332,7 +327,6 @@ void normal(void) {
 	while(1){
 		int ch = dgetchar(device);
 		if (ch) {
-			erase_typed_char(device, ch);
 			switch(ch)
 			{
 				case 'a':
@@ -348,7 +342,7 @@ void normal(void) {
 				dputs(device, "\nSwitching to set mode\n");
 				last = set(device, cur);
 				set_time(last);
-				watch_display_new(d, cur, 0);
+				watch_display_new(d, last, 0);
 				break;
 				case 't':
 				dputs(device, "\nSwitching to timer mode\n");

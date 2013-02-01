@@ -214,11 +214,10 @@ int sio_getchar( void ){
 	if( ch == CTRL_D ){
 		ch = EOF;
 	} else {
-		/* If it is a return, substitute a newline, then echo */
+		/* If it is a return, substitute a newline */
 		if( ch == '\r' ){
 			ch = '\n';
 		}
-		sio_putchar( ch );
 	}
 	if(ch)
 	current_char = 0;
