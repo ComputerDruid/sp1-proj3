@@ -20,18 +20,18 @@ static void check_alarm(device_t d, unsigned int cur_time)
 }
 
 static void clear_flags(device_t d) {
-	dputs(d, "");
+	dputs(d, "");
 }
 static void print_flags(device_t d, int lap) {
-	dputchar(d, alarm_set ? '*' : ' ');
-	dputchar(d, lap ? 'L' : ' ');
+	dputs(d, alarm_set ? " *" : "  ");
+	dputs(d, lap ? " L" : "  ");
 	last_flag_alarm = alarm_set;
 	last_flag_lap = lap;
 }
 
 static void print_flags_diff(device_t d, int lap) {
 	if (last_flag_alarm != alarm_set) {
-		dputs(d, "");
+		clear_flags(d);
 		print_flags(d, lap);
 	}
 	else if (last_flag_lap != lap) {
