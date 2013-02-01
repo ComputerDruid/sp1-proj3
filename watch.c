@@ -124,7 +124,6 @@ void timer(device_t d) {
 				lap_mode = !lap_mode;
 			break;
 			case 'r':
-				dputs(d, "\nSwitching back to normal mode\n");
 				timer_mode = 0;
 			break;
 		}
@@ -141,6 +140,8 @@ void timer(device_t d) {
 	}
 	//save accumulated time
 	accumulated_time += timer_running? uptime() - start_time : 0;
+	//return cursor to default position
+	dputs(d, "\r");
 }
 
 void alarm(device_t d)
@@ -199,7 +200,7 @@ void alarm(device_t d)
 		}
 	}
 
-	dputs(d, "\nSwitching back to normal mode\n");
+	dputchar(d, '\r');
 	//Set the alarm time after conversion
 	alarm_time = string_to_time(digits);
 }
@@ -253,7 +254,7 @@ int set(device_t d, unsigned int cur_time)
 			}
 		}
 	}
-	dputs(d, "\nSwitching back to normal mode\n");
+	dputs(d, "\r");
 	return string_to_time(digits);
 }
 
@@ -275,20 +276,20 @@ void normal(void) {
 				case 'a':
 				if (mystery_code[mystery_pos])
 				{
-					dputs(device, "\nSwitching to alarm mode\n");
+					dputchar(device, '\r');
 					alarm(device);
 					watch_display_new(d, cur, 0);
 				}
 				else mystery(device);
 				break;
 				case 's':
-				dputs(device, "\nSwitching to set mode\n");
+				dputchar(device, '\r');
 				last = set(device, cur);
 				set_time(last);
 				watch_display_new(d, last, 0);
 				break;
 				case 't':
-				dputs(device, "\nSwitching to timer mode\n");
+				dputchar(device, '\r');
 				timer(device);
 				watch_display_new(d, cur, 0);
 				break;
