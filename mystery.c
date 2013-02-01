@@ -12,6 +12,7 @@ void mystery(device_t d) {
 		int ch = dgetchar(d);
 		switch(ch) {
 			case 's':
+				dputs(d, "Rebooting\n");
 				tfault();
 			break;
 			case 'r':
