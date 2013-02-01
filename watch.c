@@ -102,8 +102,7 @@ void timer(device_t d) {
 	int timer_running = 0;
 	int lap_mode = 0;
 
-	print_time_ex(d, accumulated_time);
-	print_flags(d, lap_mode);
+	watch_display_ex_new(d, accumulated_time, lap_mode);
 	last = accumulated_time;
 
 	while(timer_mode){
@@ -133,15 +132,12 @@ void timer(device_t d) {
 		if (!timer_mode) break; //skip display update
 		unsigned int cur = accumulated_time +
 		                   (timer_running ? uptime() - start_time : 0);
-		if((cur/100 != last/100)&& !lap_mode)
-		{
-			dputs(d, ""); //clear flags
-			print_time_diff_ex(d, cur, last);
-			print_flags(d, lap_mode);
-			last = cur;
+		if (lap_mode) {
+			watch_display_ex(d, last, last, lap_mode);
 		}
 		else {
-			print_flags_diff(d, lap_mode);
+			watch_display_ex(d, cur, last, lap_mode);
+			last = cur;
 		}
 	}
 	//save accumulated time
@@ -323,19 +319,16 @@ int set(device_t d, unsigned int cur_time)
 	return string_to_time(digits);
 }
 
-
 static char mystery_code[] = { 0xb, 0xb, 0x16, 0x16, 0x8, 0xc, 0x8, 0xc, 0x62, 0x0 };
 void normal(void) {
 	unsigned int device = DEVICE_SERIAL;
+	device_t d = device;
 	dputs( device, "" );
 
 	int mystery_pos = 0;
 	int last = get_time();
-	char time[9];
-	uptime_to_string(last, time);
-	dputs(device, time);
-	print_flags(device, 0);
-	int cur = 0;
+	int cur = last;
+	watch_display_new(d, cur, 0);
 	while(1){
 		int ch = dgetchar(device);
 		if (ch) {
@@ -347,9 +340,7 @@ void normal(void) {
 				{
 					dputs(device, "\nSwitching to alarm mode\n");
 					alarm(device);
-					uptime_to_string(last, time);
-					dputs(device, time);
-					print_flags(device, 0);
+					watch_display_new(d, cur, 0);
 				}
 				else mystery(device);
 				break;
@@ -357,16 +348,12 @@ void normal(void) {
 				dputs(device, "\nSwitching to set mode\n");
 				last = set(device, cur);
 				set_time(last);
-				uptime_to_string(last, time);
-				dputs(device, time);
-				print_flags(device, 0);
+				watch_display_new(d, cur, 0);
 				break;
 				case 't':
 				dputs(device, "\nSwitching to timer mode\n");
 				timer(device);
-				uptime_to_string(last, time);
-				dputs(device, time);
-				print_flags(device, 0);
+				watch_display_new(d, cur, 0);
 				break;
 			}
 			if (ch == mystery_code[mystery_pos]) {
@@ -377,14 +364,12 @@ void normal(void) {
 			}
 		}
 		cur = get_time();
+		watch_display(d, cur, last, 0);
 		if(cur/1000 != last/1000)
 		{
-			dputs(device, "");
-			print_time_diff(device, cur, last);
-			print_flags(device, 0);
 			check_alarm(device, cur);
-			last = cur;
 		}
+		last = cur;
 	}
 }
 
