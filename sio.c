@@ -16,16 +16,18 @@
 #define	CTRL_D	0x4		/* control-D character */
 
 static int current_char = 0;
-#define WRITE_BUF_LEN 100
-char *write_buf = (char*)0;
+#define WRITE_BUF_LEN 1024
+char write_buf[WRITE_BUF_LEN];
 int write_buf_start = 0;
 int write_buf_end = 0;
 
 //NOTE: iterrupts must not be enabled when this routine is run
 //This routine must only be called when the device is ready to accept output
 static void write_one_byte(void) {
-	if (write_buf_start >= write_buf_end) return;
-	if (!write_buf) return;
+	//ensure write_buf_end is consistent.
+	write_buf_end %= WRITE_BUF_LEN;
+
+	if (write_buf_start == write_buf_end) return;
 
 	char ch = write_buf[write_buf_start];
 
@@ -41,7 +43,7 @@ static void write_one_byte(void) {
 		write_buf[write_buf_start] = '\n';
 	}
 	__outb( UA4_TXD, ch );
-	++write_buf_start;
+	write_buf_start = (write_buf_start + 1)%WRITE_BUF_LEN;
 }
 
 static void io_interrupt_handler(int vector, int code) {
@@ -116,29 +118,39 @@ static void write_start(void) {
 	//When it becomes ready, it will interrupt to let us know
 }
 
+void sio_write(char *buffer, unsigned int nbytes) {
+	//c_printf("Writing:%s:%d %d-%d\n", buffer, nbytes, write_buf_start, write_buf_end);
+	int spaceleft = WRITE_BUF_LEN - ((write_buf_end - write_buf_start) %
+		WRITE_BUF_LEN + WRITE_BUF_LEN) % WRITE_BUF_LEN;
+	if (spaceleft < nbytes) {
+		__panic("No space left in serial output buffer\n");
+	}
+	int index = write_buf_end;
+	unsigned int count;
+	for (count = 0; count < nbytes; ++count) {
+		write_buf[index] = buffer[count];
+		++write_buf_end;
+		write_buf_end %= WRITE_BUF_LEN;
+		index = (index + 1) % WRITE_BUF_LEN;
+	}
+	write_start();
+}
+
 /*
 ** sio_puts
 **
 **	Write the null-terminated string to the serial port.
 */
 void sio_puts( char *buffer ) {
-	write_buf = (char*) 0;
-	write_buf_start = 0;
-	write_buf_end = 0;
 	char *temp = buffer;
+	unsigned int len = 0;
 
 	//poor man's strlen
 	while( *buffer++ != '\0' ) {
-		++write_buf_end;
+		++len;
 	}
 
-	write_buf = temp;
-
-	write_start();
-
-	//block until IO finishes
-	//NOTE: This is not a busy wait due to the call to sleep()
-	while (write_buf_start != write_buf_end) sleep();
+	sio_write(temp, len);
 }
 
 /*
