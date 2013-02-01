@@ -150,6 +150,12 @@ void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	}
 }
 
+void print_time(device_t d, time_t t) {
+	static char tmp[9];
+	uptime_to_string(t, tmp);
+	dputs(d, tmp);
+}
+
 void print_time_ex(device_t d, unsigned int time) {
 	static char tmp[9];
 	uptime_to_string(time, tmp);

@@ -10,13 +10,6 @@ static int alarm_rang = 0;
 static int alarm_time = 0;
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
-static void print_flags(device_t d, int lap) {
-	dputchar(d, alarm_set ? '*' : ' ');
-	dputchar(d, lap ? 'L' : ' ');
-	last_flag_alarm = alarm_set;
-	last_flag_lap = lap;
-}
-
 static void check_alarm(device_t d, unsigned int cur_time)
 {
 	if(alarm_set && !alarm_rang && (cur_time > alarm_time))
@@ -24,6 +17,16 @@ static void check_alarm(device_t d, unsigned int cur_time)
 		dputchar(d, 0x07);
 		alarm_rang = 1;
 	}
+}
+
+static void clear_flags(device_t d) {
+	dputs(d, "");
+}
+static void print_flags(device_t d, int lap) {
+	dputchar(d, alarm_set ? '*' : ' ');
+	dputchar(d, lap ? 'L' : ' ');
+	last_flag_alarm = alarm_set;
+	last_flag_lap = lap;
 }
 
 static void print_flags_diff(device_t d, int lap) {
@@ -56,6 +59,38 @@ static void erase_typed_char(device_t d, int ch) {
 			default:
 				dputs(d, " "); //compensate for typed character
 		}
+	}
+}
+void watch_display_ex_new(device_t d, time_t t, int lap) {
+	print_time_ex(d, t);
+	print_flags(d, lap);
+}
+void watch_display_ex(device_t d, time_t new, time_t old, int lap) {
+	if (old/100 != new/100) {
+		clear_flags(d);
+		print_time_diff_ex(d, new, old);
+		print_flags(d, lap);
+	}
+	else {
+		print_flags_diff(d, lap);
+	}
+
+}
+void watch_display_new(device_t d, time_t t, int lap) {
+	print_time(d, t);
+	dputs(d, "  "); //add extra spaces
+	print_flags(d, lap);
+}
+void watch_display(device_t d, time_t new, time_t old, int lap) {
+	if (old/1000 != new/1000) {
+		clear_flags(d);
+		dputs(d, ""); //clear extra spaces
+		print_time_diff(d, new, old);
+		dputs(d, "  "); //add extra spaces
+		print_flags(d, lap);
+	}
+	else {
+		print_flags_diff(d, lap);
 	}
 }
 
