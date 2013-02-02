@@ -15,5 +15,6 @@ void os_init(void) {
 	timer_init();
 	//Ignore the USB device interrupt
 	__install_isr( 0x2a, usb_interrupt_handler);
+	__install_isr( 0x29, usb_interrupt_handler);
 	__asm("sti");
 }
