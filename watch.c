@@ -12,10 +12,17 @@ static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
 static void check_alarm(device_t d, unsigned int cur_time)
 {
-	if(alarm_set && !alarm_rang && (cur_time > alarm_time))
+	if(alarm_set && ((cur_time/1000) == (alarm_time/1000)))
 	{
-		dputchar(d, 0x07);
-		alarm_rang = 1;
+		if(!alarm_rang)
+		{
+			dputchar(d, 0x07);
+			alarm_rang = 1;
+		}
+	}
+	else
+	{
+		alarm_rang = 0;
 	}
 }
 
