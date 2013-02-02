@@ -1,3 +1,8 @@
+/**
+ * Defines IO operations within this OS
+ * Authors: Dean Knight, Dan Johnson
+ */
+
 #ifndef IO_H
 #define IO_H
 struct character_device {
