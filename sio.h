@@ -4,7 +4,7 @@
 ** File:	sio.h
 ** Author:	K. Reek
 ** Contributor:	Warren Carithers
-** Description:	Prototypes for polled serial I/O routines
+** Description:	Prototypes for serial I/O routines
 */
 
 #ifndef _SIO_H_
