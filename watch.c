@@ -10,6 +10,13 @@ static int alarm_rang = 0;
 static int alarm_time = 0;
 static int last_flag_alarm = 0;
 static int last_flag_lap = 0;
+
+/**
+ * Check the cur_time against an alarm time and ring the alarm if
+ * the times are equal.
+ * @param d the device we are ringing
+ * @paran cur_time the current time to be checked against
+ */
 static void check_alarm(device_t d, unsigned int cur_time)
 {
 	if(alarm_set && ((cur_time/1000) == (alarm_time/1000)))
@@ -26,9 +33,21 @@ static void check_alarm(device_t d, unsigned int cur_time)
 	}
 }
 
+
+/**
+ * Backspaces the cursor on the device so flags can be overwritten
+ * @param d device to clear flag bits on 
+ */
 static void clear_flags(device_t d) {
 	dputs(d, "");
 }
+
+
+/**
+ * Print the flags out to the device
+ * @param d device to print the flags to
+ * @paran lap Special variable used in timer mode to have L printed
+ */
 static void print_flags(device_t d, int lap) {
 	dputs(d, alarm_set ? " *" : "  ");
 	dputs(d, lap ? " L" : "  ");
@@ -36,6 +55,12 @@ static void print_flags(device_t d, int lap) {
 	last_flag_lap = lap;
 }
 
+
+/**
+ * Print the difference in flags. Used in Timer mode.
+ * @param d device to print to
+ * @paran lap special variable to detemrine if L should be printed
+ */
 static void print_flags_diff(device_t d, int lap) {
 	if (last_flag_alarm != alarm_set) {
 		clear_flags(d);
@@ -48,10 +73,23 @@ static void print_flags_diff(device_t d, int lap) {
 	last_flag_lap = lap;
 }
 
+
+/**
+ * extension of print_time_diff that prints the .x for the timer mode
+ *@param d device to print to
+ *@paran lap special variable used by timer to determine if L needs to be printed
+ */
 void watch_display_ex_new(device_t d, time_t t, int lap) {
 	print_time_ex(d, t);
 	print_flags(d, lap);
 }
+
+
+/**
+ * extension of print_time_diff that prints the .x for the timer mode
+ * @param d device to print to
+ * @paran lap special variable used by timer to determine if L needs to be printed
+ */
 void watch_display_ex(device_t d, time_t new, time_t old, int lap) {
 	if (old/100 != new/100) {
 		clear_flags(d);
@@ -63,11 +101,27 @@ void watch_display_ex(device_t d, time_t new, time_t old, int lap) {
 	}
 
 }
+
+
+/**
+ * Extension of print_time that prints the extra spaces for .s part of the time
+ * @param d device to print to
+ * @paran lap variable use to determine if L needs to printed. Passed onto other functions
+ */
 void watch_display_new(device_t d, time_t t, int lap) {
 	print_time(d, t);
 	dputs(d, "  "); //add extra spaces
 	print_flags(d, lap);
 }
+
+
+/**
+ * Prints out the watch display
+ * @param d device to print out to
+ * @paran new new time
+ * @param old old time
+ * @param lap Used for timer mode flags
+ */
 void watch_display(device_t d, time_t new, time_t old, int lap) {
 	if (old/1000 != new/1000) {
 		clear_flags(d);
@@ -81,6 +135,11 @@ void watch_display(device_t d, time_t new, time_t old, int lap) {
 	}
 }
 
+
+/**
+ * Function that acts as the timer mode for our watch
+ * @param d device to print out to
+ */
 void timer(device_t d) {
 	unsigned int start_time;
 	static unsigned int accumulated_time = 0;
@@ -132,6 +191,11 @@ void timer(device_t d) {
 	dputs(d, "\r");
 }
 
+
+/**
+ * Function that acts as Alarm mode for watch
+ * @param
+ */
 void alarm(device_t d)
 {
 	//Alarm_set bit is immediately set
@@ -198,6 +262,13 @@ void alarm(device_t d)
 	alarm_time = string_to_time(digits);
 }
 
+
+
+/**
+ * Function that acts as Set mode for watch
+ * @param d device to print on
+ * @param cur_time current time displayed to be overwritten by set
+ */
 int set(device_t d, unsigned int cur_time)
 {
 	char cur_time_str[9];
@@ -252,6 +323,11 @@ int set(device_t d, unsigned int cur_time)
 }
 
 static char mystery_code[] = { 0xb, 0xb, 0x16, 0x16, 0x8, 0xc, 0x8, 0xc, 0x62, 0x0 };
+
+/**
+ * Function that acts as Normal(default) mode for watch
+ * @param
+ */
 void normal(void) {
 	unsigned int device = DEVICE_SERIAL;
 	device_t d = device;
