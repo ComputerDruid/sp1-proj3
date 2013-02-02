@@ -42,6 +42,7 @@ int dgets(device_t d, char *str, unsigned int count) {
 int dgetchar(device_t d) {
 	return device_list[d].getchar();
 }
+
 /**
  * Print a character to a device
  * @param device to put the character to
