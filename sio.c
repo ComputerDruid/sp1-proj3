@@ -1,11 +1,8 @@
-/*
-** SCCS ID:	%W%	%G%
-**
-** File:	sio.c
-** Author:	K. Reek
-** Contributor:	Warren Carithers
-** Description:	Polled serial I/O routines
-*/
+/**
+ * Driver to interface with the serial controller/console with interrupts.
+ * Authors: Dan Johnson, Dean Knight
+ * Loosely based on: sio_polled by K. Reek and Warren Carithers.
+ */
 
 #include "sio.h"
 #include "startup.h"
@@ -13,7 +10,7 @@
 #include "x86arch.h"
 #include "support.h"
 #include "sleep.h"
-#define	CTRL_D	0x4		/* control-D character */
+#define	CTRL_D	0x4
 
 static int current_char = 0;
 #define WRITE_BUF_LEN 1024
@@ -21,8 +18,10 @@ char write_buf[WRITE_BUF_LEN];
 int write_buf_start = 0;
 int write_buf_end = 0;
 
-//NOTE: iterrupts must not be enabled when this routine is run
-//This routine must only be called when the device is ready to accept output
+/**
+ * Writes a byte of the buffer to the serial console.
+ * NOTE: CPU interrups must be disabled when this routine is called.
+ */
 static void write_one_byte(void) {
 	static int extra_cr_done = 0;
 	//ensure write_buf_end is consistent.
@@ -47,6 +46,9 @@ static void write_one_byte(void) {
 	write_buf_start = (write_buf_start + 1)%WRITE_BUF_LEN;
 }
 
+/**
+ * Interrupt handler for serial controller interrupts.
+ */
 static void io_interrupt_handler(int vector, int code) {
 	int eventID = __inb(UA4_EIR) & UA4_EIR_INT_PRI_MASK;
 	while(eventID != UA4_EIR_NO_INT)
@@ -75,11 +77,10 @@ static void io_interrupt_handler(int vector, int code) {
 	}
 	__outb( PIC_MASTER_CMD_PORT, PIC_EOI );
 }
-/*
-** sio_init
-**
-**	Initialize the serial port chip
-*/
+
+/**
+ * Initializes the serial controller.
+ */
 void sio_init( void ) {
 	/*
 	** Select bank 1 and set the data rate.
@@ -106,6 +107,9 @@ void sio_init( void ) {
 	__outb(UA4_IER, UA4_IER_RX_INT_ENABLE | UA4_IER_TX_INT_ENABLE);
 }
 
+/**
+ * Starts a write sequence, if data is not currently being written.
+ */
 static void write_start(void) {
 	while (__inb( UA4_LSR ) & UA4_LSR_TXRDY) {
 		if (write_buf_start == write_buf_end) return;
@@ -114,11 +118,18 @@ static void write_start(void) {
 			write_one_byte();
 		}
 		__asm("sti");
+		//loop if we somehow missed the TX ready interrupt while CPU
+		//interrupts are disabled.
 	}
 	//Dropped out of the loop; the device is no longer ready for input
 	//When it becomes ready, it will interrupt to let us know
 }
 
+/**
+ * Asynchronously writes the specified byte sequence to the serial console.
+ * @param buffer the data to write from
+ * @param nbytes the number of bytes to write
+ */
 void sio_write(char *buffer, unsigned int nbytes) {
 	//c_printf("Writing:%s:%d %d-%d\n", buffer, nbytes, write_buf_start, write_buf_end);
 	int spaceleft = WRITE_BUF_LEN - ((write_buf_end - write_buf_start) %
@@ -137,11 +148,9 @@ void sio_write(char *buffer, unsigned int nbytes) {
 	write_start();
 }
 
-/*
-** sio_puts
-**
-**	Write the null-terminated string to the serial port.
-*/
+/**
+ * Asynchronously prints a null-terminated string to the serial console.
+ */
 void sio_puts( char *buffer ) {
 	char *temp = buffer;
 	unsigned int len = 0;
@@ -154,18 +163,20 @@ void sio_puts( char *buffer ) {
 	sio_write(temp, len);
 }
 
-/*
-** sio_gets
-**
-**	Read a line into the user's buffer, echoing all characters.
-**	The line is terminated with either a return or a newline.
-**
-**	CTRL-D (which is returned to us as EOF) causes sio_gets to
-**	return to the program right away without storing anything
-**	else in the user's buffer.
-**
-**	Returns the number of characters in the line before the NUL.
-*/
+/**
+ * Gets a NUL-terminated line of text from the serial console.
+ * Ends with a '\n' if a whole line was read. If EOF (CTRL-D) is read, or the
+ * buffer is filled, it does not end with a '\n'.
+ *
+ * NOTE: This routine blocks waiting for input. While this is arguably not
+ * allowed in this project, it does not matter, because this routine is never
+ * called by the watch program. It is simply included for completeness and
+ * debugging.
+ *
+ * @param buffer to put the read string
+ * @param bufsize the maximum number of chars to read, counting the ending NUL.
+ * @return the number of characters read, not counting the ending NUL.
+ */
 int sio_gets( char *buffer, unsigned int bufsize ) {
 	char	*bp = buffer;
 
@@ -203,22 +214,19 @@ int sio_gets( char *buffer, unsigned int bufsize ) {
 	return bp - buffer;
 }
 
-/*
-** sio_putchar
-**
-**	Write a single character to the device
-*/
+/**
+ * Writes a character to the serial console.
+ */
 void sio_putchar( char ch ) {
 	static char buf[2] = {'\0', '\0'};
 	buf[0] = ch;
 	sio_puts(buf);
 }
 
-/*
-** sio_getchar
-**
-**	Read a single character from the device
-*/
+/**
+ * gets a character from the serial console, if one is waiting.
+ * @return 0 if no character is waiting, the waiting character, otherwise.
+ */
 int sio_getchar( void ){
 	int ch = current_char;
 
