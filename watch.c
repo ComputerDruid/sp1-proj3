@@ -183,6 +183,11 @@ void alarm(device_t d)
 			{
 			case 'r':
 				setting_time = 0; //All done
+				break;
+			case 'c':
+				setting_time = 0;
+				alarm_set = 0;
+				break;
 			}
 		}
 	}
