@@ -1,3 +1,7 @@
+/**
+ * Implements user side IO functions
+ * Authors: Dean Knight, Dan Johnson
+ */
 #include "io.h"
 #include "c_io.h"
 #include "sio.h"

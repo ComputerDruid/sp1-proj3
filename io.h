@@ -1,5 +1,5 @@
 /**
- * Defines IO operations within this OS
+ * Defines user side IO operations within this OS
  * Authors: Dean Knight, Dan Johnson
  */
 

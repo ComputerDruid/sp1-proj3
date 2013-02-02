@@ -1,3 +1,8 @@
+/**
+ * Implements user side time handling functions
+ * Authors: Dean Knight, Dan Johnson
+ */
+
 #include "time.h"
 #include "timer.h"
 #include "io.h"

@@ -1,3 +1,8 @@
+/**
+ * Implements the core of the watch program
+ * Authors: Dean Knight, Dan Johnson
+ */
+
 #include "timer.h"
 #include "io.h"
 #include "mystery.h"
