@@ -1,22 +1,18 @@
-/*
-** SCCS ID:	%W%	%G%
-**
-** File:	main.c
-** Author:	K. Reek
-** Contributor:	Warren Carithers
-** Description:	Main program of the sample polled serial I/O program.
-*/
-
+/**
+ * Main module which serves as the entry point for the system
+ *
+ * Authors: Dan Johnson, Dean Knight
+ */
 #include "os.h"
 #include "watch.h"
 
-/*
-** main
-**
-**	Main program
-*/
-int main ( void ) {
+/**
+ * Entry point for the system.
+ */
+int main (void) {
+	//Initialize OS
 	os_init();
+	//Start user program
 	normal();
-	return( 0 );
+	return 0;
 }
