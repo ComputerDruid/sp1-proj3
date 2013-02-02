@@ -93,6 +93,7 @@ void timer(device_t d) {
 	last = accumulated_time;
 
 	while(timer_mode){
+		check_alarm(d, get_time());
 		int ch = dgetchar(d);
 		switch(ch)
 		{
