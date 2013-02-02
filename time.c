@@ -109,32 +109,36 @@ void print_time_diff(unsigned int device, unsigned int current, unsigned int las
 	}
 }
 
-void uptime_to_string(unsigned int uptime, char* time)
-{
-	unsigned int current_hours = (uptime/MS_PER_HOUR)%24;
+/**
+ * Convert the specified time into a string representation.
+ *
+ * @param time the time to convert.
+ * @param dst a string buffer of at least 9 characters to receive the string.
+ */
+void time_to_string(time_t time, char* dst) {
+	unsigned int current_hours = (time/MS_PER_HOUR)%24;
 	int current_hours_h1 = current_hours%10;
 	int current_hours_h2 = current_hours/10;
 
-
-	unsigned int current_minutes = (uptime/MS_PER_MIN)%60;
+	unsigned int current_minutes = (time/MS_PER_MIN)%60;
 	int current_minutes_m1 = current_minutes%10;
 	int current_minutes_m2 = current_minutes/10;
 
-	unsigned int current_seconds = (uptime/MS_PER_SEC)%60;
+	unsigned int current_seconds = (time/MS_PER_SEC)%60;
 	int current_seconds_s1 = current_seconds%10;
 	int current_seconds_s2 = current_seconds/10;
 
-	time[0] = current_hours_h2 + '0';
-	time[1] = current_hours_h1 + '0';
-	time[2] = ':';
+	dst[0] = current_hours_h2 + '0';
+	dst[1] = current_hours_h1 + '0';
+	dst[2] = ':';
 
-	time[3] = current_minutes_m2 + '0';
-	time[4] = current_minutes_m1 + '0';
-	time[5] = ':';
+	dst[3] = current_minutes_m2 + '0';
+	dst[4] = current_minutes_m1 + '0';
+	dst[5] = ':';
 
-	time[6] = current_seconds_s2 + '0';
-	time[7] = current_seconds_s1 + '0';
-	time[8] = '\0';
+	dst[6] = current_seconds_s2 + '0';
+	dst[7] = current_seconds_s1 + '0';
+	dst[8] = '\0';
 }
 
 void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
@@ -152,13 +156,13 @@ void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 
 void print_time(device_t d, time_t t) {
 	static char tmp[9];
-	uptime_to_string(t, tmp);
+	time_to_string(t, tmp);
 	dputs(d, tmp);
 }
 
 void print_time_ex(device_t d, unsigned int time) {
 	static char tmp[9];
-	uptime_to_string(time, tmp);
+	time_to_string(time, tmp);
 	dputs(d, tmp);
 	dputchar(d, '.');
 	dputchar(d, '0' + (time/100)%10);

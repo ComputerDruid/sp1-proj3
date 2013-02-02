@@ -207,7 +207,7 @@ void alarm(device_t d)
 	digits[6] = '\0';
 
 	//Get alarm_time as a string, compress it for use later
-	uptime_to_string(alarm_time, alarm_time_str);
+	time_to_string(alarm_time, alarm_time_str);
 	compress_time_str(alarm_time_str, digits);
 
 	//print alarm_time_str
@@ -275,7 +275,7 @@ int set(device_t d, unsigned int cur_time)
 	char digits[7];
 	digits[6] = '\0';
 	//Get cur_time as a string, compress it for use later
-	uptime_to_string(cur_time, cur_time_str);
+	time_to_string(cur_time, cur_time_str);
 	compress_time_str(cur_time_str, digits);
 
 	dputs(d, cur_time_str);
