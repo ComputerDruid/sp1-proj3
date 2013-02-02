@@ -4,11 +4,19 @@
 #include "startup.h"
 
 static unsigned int count = 0;
+
+/**
+ * Interrupt handler for timer ticks.
+ */
 static void timer_interrupt_handler(int vector, int code) {
 	count++;
 	__outb( PIC_MASTER_CMD_PORT, PIC_EOI );
 }
 
+/**
+ * Initialize the timer.
+ * Sets the timer to 100Hz and installs our interrupt handler.
+ */
 void timer_init(void) {
 	dputs(DEVICE_CONSOLE, "Initializing Timer\n");
 	unsigned int divisor = TIMER_FREQUENCY/100;
@@ -18,6 +26,9 @@ void timer_init(void) {
 	__install_isr(INT_VEC_TIMER, timer_interrupt_handler);
 }
 
+/**
+ * @return the number of milliseconds the system has been running.
+ */
 unsigned int uptime(void) {
 	return count * 10;
 }
