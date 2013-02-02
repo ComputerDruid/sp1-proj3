@@ -13,4 +13,5 @@ void compress_time_str(char* uncompressed, char* compressed);
 unsigned int string_to_time(char* time_string);
 void set_time(time_t new_time);
 time_t get_time(void);
+unsigned int next_uptime_at(time_t time);
 #endif

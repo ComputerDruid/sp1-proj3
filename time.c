@@ -223,3 +223,10 @@ void set_time(unsigned int new_time) {
 time_t get_time(void) {
 	return (time_offset + uptime()) % MS_PER_DAY;
 }
+
+unsigned int next_uptime_at(time_t time) {
+	unsigned int up = uptime();
+	unsigned int current_time = (time_offset + up) % MS_PER_DAY;
+	return ((time - current_time)%MS_PER_DAY + MS_PER_DAY) % MS_PER_DAY +
+		up;
+}
