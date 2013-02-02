@@ -33,7 +33,7 @@ void mystery(device_t d) {
 				tfault();
 			break;
 			case 'r':
-				dputs(d, "\nSwitching back to normal mode\n");
+				dputs(d, "");
 				looping = 0;
 			break;
 		}

@@ -354,7 +354,10 @@ void normal(void) {
 					alarm(device);
 					watch_display_new(d, cur, 0);
 				}
-				else mystery(device);
+				else {
+					mystery(device);
+					watch_display_new(d, cur, 0);
+				}
 				break;
 				case 's':
 				dputchar(device, '\r');
