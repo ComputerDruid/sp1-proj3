@@ -1,3 +1,7 @@
+/**
+ * Defines the user side code of our time handling methods
+ * Authors: Dean Knight, Dan Johnson
+ */
 #ifndef TIME_H
 #define TIME_H
 

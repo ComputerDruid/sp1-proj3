@@ -11,14 +11,20 @@
 
 static unsigned int time_offset = 0;
 
-/******************************************************************
-Name: print_time_diff
-Purpose: Calculate difference between two times given and print out
-	the required digits. Also takes care of backspacing flags
-	before printing
-Params:	unsigned int current (time in ms)
-	unsigned int last    (time in ms)
-******************************************************************/
+/**
+ * 
+ * @param
+ * @param
+ */
+
+/**
+ * Calculate difference between two times given and print out
+ * the required digits. Also takes care of backspacing flags
+ * before printing
+ * @param device device to print to
+ * @param current current time
+ * @param last last time printed to screen to be diffed against
+ */
 void print_time_diff(unsigned int device, unsigned int current, unsigned int last)
 {
 	//This is the digit scheme used in variable names below:
@@ -141,6 +147,13 @@ void time_to_string(time_t time, char* dst) {
 	dst[8] = '\0';
 }
 
+
+/**
+ * Extension of print_time_diff to add on the .s for timer mode
+ * @param d device to print to
+ * @param cur current time
+ * @param last the last time to be printed on the screen
+ */
 void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	if (last/1000 != cur/1000) {
 		dputs(d, "");
@@ -154,12 +167,24 @@ void print_time_diff_ex(device_t d, unsigned int cur, unsigned int last) {
 	}
 }
 
+
+/**
+ * prints the time
+ * @param d device top print to
+ * @param t time to print
+ */
 void print_time(device_t d, time_t t) {
 	static char tmp[9];
 	time_to_string(t, tmp);
 	dputs(d, tmp);
 }
 
+
+/**
+ * Extension of print_time to print the time along with the .s for timer mode
+ * @param d device to print to
+ * @param time time to print
+ */
 void print_time_ex(device_t d, unsigned int time) {
 	static char tmp[9];
 	time_to_string(time, tmp);
@@ -168,8 +193,12 @@ void print_time_ex(device_t d, unsigned int time) {
 	dputchar(d, '0' + (time/100)%10);
 }
 
-//Takes uncompressed time string and compresses (removes :'s) it
-//Assumes two null terminated strings of size 9 and 7 respectively
+
+/**
+ * Takes an uncompressed string and compresses it by removing :'s
+ * @param uncompressed pointer to uncompressed string
+ * @param compressed pointer to buffer to store new compressed string
+ */
 void compress_time_str(char* uncompressed, char* compressed)
 {
 	int compressed_index = 0;
@@ -187,8 +216,12 @@ void compress_time_str(char* uncompressed, char* compressed)
 	}
 }
 
-//Takes a compressed or uncompressed time string and returns the time
-//it represents in miliseconds
+
+/**
+ * takes a compressed or uncompressed time string and returns the time 
+ * @param time_str the string to be converted to a time in miliseconds
+ * @return time in miliseconds
+ */
 unsigned int string_to_time(char* time_str)
 {
 	char compressed_time_str[7];
@@ -218,16 +251,28 @@ unsigned int string_to_time(char* time_str)
 	return time_in_ms;
 }
 
-//Simple function that takes a new time (in miliseconds) and sets the
-//global time offset.
+/**
+ * Simple function that takes a new time (in miliseconds) and sets the 
+ * global time offset 
+ * @param new_time time to be set
+ */
 void set_time(unsigned int new_time) {
 	time_offset = ((new_time%MS_PER_DAY) - (uptime()%MS_PER_DAY) + MS_PER_DAY)%MS_PER_DAY;
 }
 
+
+/**
+ * @return returns the time in miliseconds
+ */
 time_t get_time(void) {
 	return (time_offset + uptime()) % MS_PER_DAY;
 }
 
+
+/**
+ * Calculates next uptime at a certain time
+ * @param time time to calculate uptime at
+ */
 unsigned int next_uptime_at(time_t time) {
 	unsigned int up = uptime();
 	unsigned int current_time = (time_offset + up) % MS_PER_DAY;
