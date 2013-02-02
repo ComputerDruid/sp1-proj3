@@ -1,1 +1,35 @@
-==Readme==
+SP1 Project 3
+=============
+Dan Johnson
+Dean Knight
+
+Approach
+--------
+This program is divided into 3 parts. The standalone bootstrap program we used
+without modifications. The OS/driver code, which deals with hardware interfacing
+and interrupts, is composed of the "sio", "sleep", "io", and "timer". The user
+code is responsible for driving the watch, and is made up of the "watch",
+"time", and "mystery". Finally, "main" defines the entry point into the system.
+
+Division of Labor
+-----------------
+During the system design and hardware interface portion of the project, we both
+worked on the project together and at the same time. So both the "sio" module
+and the "timer" module were written collaboratively.
+
+Dan implemented the io abstraction framework and the mystery handler. Dean
+implemented the alarm functionality and the time/string handling functions. Dan
+implemented the stopwatch mode, and refined the sio framework to be
+asynchronous using a circular buffer.
+
+We spent most of our debugging time together and both collaborated to put the
+finishing touches (including comments and README) together.
+
+Final Thoughts
+--------------
+Getting the sio_polled example to work took some extra initialization which was
+not in the example code, so the example should probably be updated to include
+an update to the modem control register, as this took us some time to figure
+out.
+
+We found this project to be a good experience, and enjoyed it.
